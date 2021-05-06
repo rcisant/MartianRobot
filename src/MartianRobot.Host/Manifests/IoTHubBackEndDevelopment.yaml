@@ -1,0 +1,41 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: MartianRobot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: MartianRobot
+  template:
+    metadata:
+      labels:
+        app: MartianRobot
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: MartianRobot
+        image: sandboxiotcc.azurecr.io/MartianRobot:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: MartianRobot
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: MartianRobot

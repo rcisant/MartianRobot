@@ -1,0 +1,9 @@
+version: "3.2"
+services:
+    sgs-basic-api:
+        container_name: sgs-basic-api
+        build: .
+        ports:
+            - "44322:80"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Local

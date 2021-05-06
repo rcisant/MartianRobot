@@ -1,0 +1,55 @@
+# Pipeline for test the code and build and publish de docker image (CI) when changes are merged in main branch
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: rununittest
+  displayName: Run unit tests build and push in container registry
+  jobs:
+  - job: runTests
+    displayName: Run Unit Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: UseDotNet@2
+        displayName: dotnet install
+        inputs:
+          packageType: 'sdk'
+          version: '3.1.x'
+      - task: DotNetCoreCLI@2
+        displayName: dotnet restore
+        inputs:
+          command: 'restore'
+          projects: '**/*.csproj'
+          feedsToUse: 'config'
+          nugetConfigPath: 'NuGet.config'
+      - task: DotNetCoreCLI@2
+        displayName: dotnet build
+        inputs:
+          command: 'build'
+          projects: '**/*.csproj'
+      - task: DotNetCoreCLI@2
+        displayName: dotnet test
+        inputs:
+          command: 'test'
+          projects: '**/*[Tt]ests/*.csproj'
+      
+  #- job: buildAndPush
+  #  displayName: Build and Push de docker Image to container registry
+  #  dependsOn: runTests
+  #  condition: succeeded() # this job will only run if rununittest success
+  #  steps:
+  #    - task: Docker@2
+  #      displayName: docker buildAndPush
+  #      inputs:
+  #        containerRegistry: 'sandboxiotcc'
+  #        repository: 'iothubassetsdevices'
+  #        command: 'buildAndPush'
+  #        Dockerfile: '/Dockerfile'
+              
+      
+

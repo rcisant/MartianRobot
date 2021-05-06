@@ -1,0 +1,117 @@
+name: 0.0.$(Rev:r)
+
+trigger: 
+- main
+variables:
+  azResourceGroup: '$(prefix)$(name)$(env)'
+  azSite: '$(prefix)$(name)api$(env)'
+  azLocation: $(location)
+  ## ----------------------------
+  ## API Application Variables
+  ## ----------------------------
+  AzureAd.ClientId: $(adClientId)
+pool:
+  vmImage: 'ubuntu-latest'
+stages :
+  - stage: DeployInfra
+    jobs:
+    - job: DeployInfraJob
+      steps:
+        - task: CmdLine@2
+          displayName: 'Variables'
+          inputs:
+            script: |
+              echo Var "azResourceGroup": $(azResourceGroup)
+              echo Var "azSite": $(azSite)
+              echo Var "azLocation": $(azLocation)
+              echo Var "AzureAd.ClientId": $(AzureAd.ClientId)
+        - task: AzureResourceManagerTemplateDeployment@3
+          displayName: Deploying ARM
+          inputs:
+            deploymentScope: 'Resource Group'
+            azureResourceManagerConnection: 'SandBoxServiceConnection'
+            subscriptionId: '757e6f07-821d-4ad2-9b9c-898bf397c79f'
+            action: 'Create Or Update Resource Group'
+            resourceGroupName: '$(azResourceGroup)'
+            location: $(azLocation)
+            templateLocation: 'Linked artifact'
+            csmFile: '$(System.DefaultWorkingDirectory)/deploy/arm-main.json'
+            csmParametersFile: '$(System.DefaultWorkingDirectory)/deploy/arm-main.parameters.json'
+            overrideParameters: '-siteName $(azSite)'
+            deploymentMode: 'Incremental'
+            deploymentOutputs: 'armOutput'
+        - script: |
+            echo Var "armOutput.insightsID.value": $(armOutput.insightsID.value)
+            echo "##vso[task.setvariable variable=insightsID;isOutput=true]$(armOutput.insightsID.value)"
+          name: ArmOutputVar
+  - stage: Build
+    dependsOn: DeployInfra
+    jobs:
+    - job: BuildJob
+      steps:
+        - task: DotNetCoreCLI@2
+          displayName: Restore
+          inputs:
+            command: 'restore'
+            projects: '**/*.Host.csproj'
+            feedsToUse: 'config'
+            nugetConfigPath: 'NuGet.config'
+        - task: DotNetCoreCLI@2
+          displayName: Build
+          inputs:
+            projects: '**/*.Host.csproj'
+            arguments: '--no-restore --configuration Release /p:Version=$(Build.BuildNumber)'
+        - task: DotNetCoreCLI@2
+          displayName: Test
+          inputs:
+            command: 'test'
+            arguments: '/p:CollectCoverage=true /p:CoverletOutputFormat=opencover'
+        - task: DotNetCoreCLI@2
+          displayName: Publish
+          inputs:
+            command: 'publish'
+            publishWebProjects: false
+            projects: '**/*.Host.csproj'
+            arguments: '--no-build --no-restore --configuration Release --output $(Build.ArtifactStagingDirectory)'
+        - task: PublishBuildArtifacts@1
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: 'build'
+            publishLocation: 'Container'
+  - stage: DeployLab
+    dependsOn: 
+    - DeployInfra
+    - Build
+    variables:
+      ApplicationInsights.InstrumentationKey: $[stageDependencies.DeployInfra.DeployInfraJob.outputs['ArmOutputVar.insightsID']]
+    jobs:
+    - deployment: DeployLabJob
+      environment: Dev
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - download: current
+                name: 'build'
+              - task: CmdLine@2
+                displayName: 'Variables'
+                inputs:
+                  script: |
+                    echo Var "AzureAd.ClientId": $(AzureAd.ClientId)
+                    echo Var "ApplicationInsights.InstrumentationKey": $(ApplicationInsights.InstrumentationKey)
+              - task: ExtractFiles@1
+                displayName: 'Extract build files'
+                inputs:
+                  archiveFilePatterns: '$(Pipeline.Workspace)/build/*.zip'
+                  destinationFolder: '$(Agent.BuildDirectory)/app'
+                  cleanDestinationFolder: false
+                  overwriteExistingFiles: true
+              - task: AzureRmWebAppDeployment@4
+                displayName: 'Azure App Service Deploy: $(azSite)'
+                inputs:
+                  ConnectionType: 'AzureRM'
+                  azureSubscription: 'SandBoxServiceConnection'
+                  appType: 'apiApp'
+                  WebAppName: '$(azSite)'
+                  packageForLinux: '$(Agent.BuildDirectory)/app'
+                  JSONFiles: '**/appsettings.json'

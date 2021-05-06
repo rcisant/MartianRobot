@@ -1,0 +1,45 @@
+{
+  "author": "SGS SWA CoE",
+  "stack": "dotnet",
+  "classifications": [
+    "Web/WebAPI"
+  ],
+  "name": "SGS ASP.NET Core Web API Basic",
+  "identity": "sgs.aspnetcore.webapi.basic",
+  "shortName": "sgs.webapi",
+  "tags": {
+    "language": "C#"
+  },
+  "sourceName": "SGSWebAPITemplateBasic",
+  "preferNameDirectory": true,
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            ".vs/**",
+            ".git/**",
+            "*.log",
+			      "*.nuspec",
+			      "LogFiles/**"
+          ]
+        },
+        {
+          "condition": "(!memoryCache)",
+          "exclude": [
+            "src/*.Api/Controllers/v1/CacheInspectionController.cs"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "memoryCache": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Adds In memory cache services to the target API"
+    }
+  },
+  "built": 1558419981884
+}

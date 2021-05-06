@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ProjectGuid>{4311A9E4-B963-408F-84E8-38DA97D4961B}</ProjectGuid>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>1701;1702;1591</NoWarn>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <DefineConstants>TRACE;memoryCache</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="Providers\Core2EnterpriseUserProviderAdapter.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Providers\Core2EnterpriseUserProviderAdapter.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="10.1.1" />
+        <PackageReference Include="Azure.Messaging.EventHubs" Version="5.4.0" />
+        <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.4.0" />
+        <PackageReference Include="FluentValidation.AspNetCore" Version="9.5.0" />
+        <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="5.1.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.4">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Identity.Web" Version="1.5.1" />
+        <PackageReference Include="Polly" Version="7.2.1" />
+        <PackageReference Include="Serilog" Version="2.10.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
+        <!--#if (memoryCache) -->
+        <!--#endif -->
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.2" />        
+        <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="6.0.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.0.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MartianRobot.Application\MartianRobot.Application.csproj" />
+        <ProjectReference Include="..\MartianRobot.Domain\MartianRobot.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

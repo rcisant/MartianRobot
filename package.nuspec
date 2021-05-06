@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>sgs.aspnetcore.webapi.basic</id>
+    <version>0.0.0</version>
+    <authors>SGS Software Architecture CoE</authors>
+    <description>SGS AspNetCore 3.1 Web API Basic Scaffolding.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2020 SGS</copyright>
+    <tags>CSharp C# WebAPI</tags>
+  	<packageTypes>
+      <packageType name="Template" />
+    </packageTypes>
+  </metadata>
+  <files>
+    <file src="**\*.*" target="" exclude="**\*.nuspec;LogFiles\**\*.*;**\.git\**\*.*;**\*.dll;**\*.exe;**\*.bat;**\*.resources;**\obj\*.*;**\obj\**\*.*;**\bin\**\*.*;**\.vs\**\*.*"/>
+  </files>
+</package>
